@@ -1,0 +1,50 @@
+{
+  "environment": "Native Nginx 1.28.0 with local Python processes; NOT Docker",
+  "config_syntax": "PASS (container file paths and listen port adapted)",
+  "docker_network_checks": "NOT RUN: no Docker engine",
+  "dns_reresolution": "NOT RUN in local smoke test; local upstream IP/ports substituted",
+  "round_robin": {
+    "result": "PASS",
+    "sequence": [
+      "backend_2",
+      "backend_1",
+      "backend_2",
+      "backend_1",
+      "backend_2",
+      "backend_1",
+      "backend_2",
+      "backend_1",
+      "backend_2",
+      "backend_1"
+    ]
+  },
+  "routes_and_headers": {
+    "result": "PASS",
+    "statuses": {
+      "/": 200,
+      "/style.css": 200,
+      "/api/whoami": 200,
+      "/healthz": 200,
+      "/readyz": 200,
+      "/favicon.ico": 204
+    }
+  },
+  "single_backend_failover": {
+    "result": "PASS",
+    "requests": 20,
+    "dropped": 0
+  },
+  "recovery": {
+    "result": "PASS",
+    "servers": [
+      "backend_1",
+      "backend_2"
+    ]
+  },
+  "all_backends_down": {
+    "gateway_liveness": 200,
+    "backend_readiness": 502,
+    "result": "PASS"
+  },
+  "overall_local_smoke": "PASS"
+}

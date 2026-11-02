@@ -1,0 +1,28 @@
+# AI-generated review baseline. Deliberately flawed. DO NOT RUN.
+# Saved as text so Compose will not select it automatically.
+services:
+  loadbalancer:
+    image: nginx:1.28-alpine
+    ports: ["8080:80"]
+    networks: [public_subnet, private_subnet]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  backend_1:
+    build: ./backend
+    environment: {SERVER_ID: backend_1}
+    ports: ["3001:3000"]
+    networks: [private_subnet]
+  backend_2:
+    build: ./backend
+    environment: {SERVER_ID: backend_2}
+    ports: ["3002:3000"]
+    networks: [private_subnet]
+networks:
+  public_subnet:
+    driver: bridge
+    ipam:
+      config: [{subnet: 172.28.40.0/24}]
+  private_subnet:
+    driver: bridge
+    ipam:
+      config: [{subnet: 172.28.41.0/24}]

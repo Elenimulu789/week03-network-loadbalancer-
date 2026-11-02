@@ -1,0 +1,76 @@
+name: week03-network-loadbalancer
+
+x-backend: &backend
+  build: ./backend
+  image: week03-backend:local
+  networks: [private_subnet]
+  # Internal documentation, NOT a host port publication.
+  expose: ["3000"]
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: unless-stopped
+  healthcheck:
+    test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/healthz', timeout=2)"]
+    interval: 3s
+    timeout: 2s
+    retries: 5
+    start_period: 3s
+
+services:
+  backend_1:
+    <<: *backend
+    environment:
+      SERVER_ID: backend_1
+  backend_2:
+    <<: *backend
+    environment:
+      SERVER_ID: backend_2
+
+  loadbalancer:
+    # resolve in open-source upstreams requires Nginx >= 1.27.3.
+    image: nginx:1.28-alpine
+    entrypoint: [nginx, -g, "daemon off;"]
+    ports: ["127.0.0.1:8080:80"]
+    networks: [public_subnet, private_subnet]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs: [/var/cache/nginx, /var/run, /tmp]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    depends_on:
+      backend_1:
+        condition: service_healthy
+      backend_2:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+  # Only started by the isolation test, never by normal compose up.
+  # It stands for another container on the public side of the gateway.
+  probe:
+    profiles: [tools]
+    image: week03-backend:local
+    networks: [public_subnet]
+    entrypoint: [python]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+networks:
+  public_subnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.40.0/24
+  private_subnet:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.28.41.0/24

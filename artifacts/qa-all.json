@@ -1,0 +1,88 @@
+{
+  "started_utc": "2026-11-02T05:21:49.012880+00:00",
+  "mode": "all",
+  "environment": "Docker Compose",
+  "tests": {
+    "audit": {
+      "compose_audit": "pass",
+      "nginx_config": "pass",
+      "output": ""
+    },
+    "health": {
+      "/": 200,
+      "/style.css": 200,
+      "/api/whoami": 200,
+      "/healthz": 200,
+      "/readyz": 200
+    },
+    "distribution": {
+      "sequence": [
+        "backend_2",
+        "backend_1",
+        "backend_2",
+        "backend_1",
+        "backend_2",
+        "backend_1",
+        "backend_2",
+        "backend_1",
+        "backend_2",
+        "backend_1"
+      ],
+      "counts": {
+        "backend_2": 5,
+        "backend_1": 5
+      }
+    },
+    "failover": {
+      "requests": 20,
+      "dropped": 0,
+      "sequence": [
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2"
+      ],
+      "recovery": [
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_2",
+        "backend_1"
+      ]
+    },
+    "isolation": {
+      "unpublished_host_ports": [
+        3000,
+        3001,
+        3002
+      ],
+      "private_ips_tested": [
+        "172.28.41.3",
+        "172.28.41.2"
+      ],
+      "public_probe": "Public probe can reach gateway\nBLOCKED private backend: 172.28.41.3\nBLOCKED private backend: 172.28.41.2\nBLOCKED private backend: backend_1\nBLOCKED private backend: backend_2",
+      "boundary": "ordinary client/public-network container"
+    }
+  },
+  "result": "PASS"
+}
